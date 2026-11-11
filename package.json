@@ -1,12 +1,13 @@
 {
   "name": "nadpass-campus",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "node scripts/build.mjs",
     "test": "node --test tests/contract.test.mjs",
-    "test:ui": "node tests/ui.mjs"
+    "test:ui": "node tests/ui.mjs",
+    "test:management": "node tests/management.mjs"
   },
   "dependencies": {
     "ethers": "6.15.0"

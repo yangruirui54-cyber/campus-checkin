@@ -17,8 +17,10 @@ try{
  assert.equal(await page.locator('#stat-events').textContent(),'0');
  await page.locator('nav [data-tab="studio"]').click();await page.locator('#create-form input[name="title"]').fill('Local EVM browser test');await page.locator('#create-form button').click();await page.waitForFunction(()=>document.querySelector('#stat-events').textContent==='1');
  await page.locator('#issue-form button[type="submit"]').click();await page.waitForFunction(()=>document.querySelector('#stat-badges').textContent==='1');
+ await page.waitForSelector('#ledger-body [data-record]');assert.equal(await page.locator('#ledger-body [data-record]').count(),1);
  await page.locator('nav [data-tab="passport"]').click();await page.locator('[data-verify="1"]').click();await page.waitForSelector('#verification.valid');
  await page.locator('nav [data-tab="studio"]').click();await page.locator('#revoke').click();await page.waitForFunction(()=>document.querySelector('#stat-badges').textContent==='0');
  await page.locator('nav [data-tab="verify"]').click();await page.locator('#verify-form button').click();await page.waitForSelector('#verification.invalid');assert.match(await page.locator('#verification h2').textContent(),/撤销/);
+ await page.locator('nav [data-tab="studio"]').click();await page.waitForFunction(()=>document.querySelector('#ledger-body').textContent.includes('已撤销'));page.once('dialog',d=>d.accept());await page.locator('#close-event').click();await page.waitForFunction(()=>document.querySelector('#selected-event-status').textContent.includes('已关闭'));assert.equal(await page.locator('#issue-submit').isDisabled(),true);
  console.log('Local EVM browser integration passed: connect, deploy, create, issue, verify, revoke. This is NOT a Monad deployment.');
 }finally{await browser.close();await rpc.disconnect();}

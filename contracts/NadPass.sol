@@ -3,10 +3,11 @@ pragma solidity ^0.8.24;
 
 /// @notice Educational attendance registry, not an NFT or proof of physical presence.
 contract NadPass {
-    string public constant VERSION = "NadPass/1";
+    string public constant VERSION = "NadPass/2";
     struct Gathering { address organizer; string title; uint32 capacity; uint32 issued; bool open; }
     struct Credential { uint64 issuedAt; bool revoked; }
     uint256 public eventCount;
+    mapping(uint256 => address[]) private participants;
     mapping(uint256 => Gathering) public gatherings;
     mapping(uint256 => mapping(address => Credential)) public credentials;
     event EventCreated(uint256 indexed eventId, address indexed organizer, string title);
@@ -35,6 +36,7 @@ contract NadPass {
         if (credentials[eventId][participant].issuedAt != 0) revert AlreadyIssued();
         credentials[eventId][participant] = Credential(uint64(block.timestamp), false);
         e.issued++;
+        participants[eventId].push(participant);
         emit CredentialIssued(eventId, participant);
     }
     function revoke(uint256 eventId, address participant) external organizerOnly(eventId) {
@@ -45,6 +47,16 @@ contract NadPass {
     }
     function closeEvent(uint256 eventId) external organizerOnly(eventId) {
         gatherings[eventId].open = false;
+    }
+    /// @notice Stable issuance-order pagination; revoked records stay in the list.
+    function listParticipants(uint256 eventId, uint256 offset, uint256 limit) external view returns (address[] memory result) {
+        if (limit == 0 || limit > 50) revert InvalidInput();
+        uint256 count = participants[eventId].length;
+        if (offset >= count) return new address[](0);
+        uint256 end = offset + limit;
+        if (end > count) end = count;
+        result = new address[](end - offset);
+        for (uint256 i = offset; i < end; i++) result[i - offset] = participants[eventId][i];
     }
     function verify(uint256 eventId, address participant) external view returns (bool) {
         Credential memory c = credentials[eventId][participant];
