@@ -22,7 +22,7 @@ function render(){
  $('#stat-network').textContent=mode==='demo'?'本地浏览器':'Monad Testnet';$('#mode-badge').innerHTML=`<i></i>${mode==='demo'?'本地演示':'测试网已连接'}`;
  $('#identity-address').textContent=account;$('#identity-source').textContent=mode==='demo'?'LOCAL DEMO':'MONAD TESTNET';
  $('#footer-status').textContent=mode==='demo'?'本地演示 · 无链上交易':`测试网 · 合约 ${short(contract.target)}`;
- $('#sample-note').textContent=mode==='demo'?'以下为虚构示例活动，用于体验产品流程，不是实际报名入口。':'读取当前合约最近 50 场活动；链上记录不等于主办方身份认证。';
+ $('#sample-note').textContent=mode==='demo'?'探索示例活动，体验参与记录的签发与收藏。':'读取当前合约最近 50 场活动；链上记录不等于主办方身份认证。';
  $('#reset').hidden=mode!=='demo';$('#try-demo').textContent=mode==='demo'?'体验一张参与凭证 ↗':'进入活动工作台 ↗';
  const query=$('#search').value.trim().toLowerCase();const filtered=d.events.filter(e=>e.title.toLowerCase().includes(query));
  $('#event-grid').innerHTML=filtered.map((e,i)=>`<article class="event-card"><div class="event-cover ${['','mint','peach'][i%3]}"><span class="cover-tag">${mode==='demo'?'SAMPLE EVENT':'ON TESTNET'} / ${String(e.id).padStart(3,'0')}</span><span class="cover-symbol">${['✳','⌘','◈'][i%3]}</span></div><div class="event-body"><div class="event-meta"><span>${mode==='demo'?'校园 / 示例活动':'活动方 '+esc(short(e.organizer))}</span><span>#${e.id}</span></div><h3>${esc(e.title)}</h3><p>探索一个新想法，留下你的参与记录。</p><div class="event-bottom"><span>${e.issued} / ${e.capacity} 已签发${e.open?'':' · 已关闭'}</span><button class="small-btn" data-event="${e.id}">${mode==='demo'?'体验签发 ↗':'查看签发 →'}</button></div></div></article>`).join('')||empty('没有匹配的活动');
@@ -82,7 +82,7 @@ $('#connect').onclick=()=>run(async()=>{
  try{await window.ethereum.request({method:'wallet_switchEthereumChain',params:[{chainId:'0x279f'}]});}
  catch(e){if(e.code!==4902)throw e;await window.ethereum.request({method:'wallet_addEthereumChain',params:[{chainId:'0x279f',chainName:'Monad Testnet',nativeCurrency:{name:'MON',symbol:'MON',decimals:18},rpcUrls:['https://testnet-rpc.monad.xyz'],blockExplorerUrls:['https://testnet.monadvision.com']}]});}
  provider=new BrowserProvider(window.ethereum);signer=await provider.getSigner();await ensureNetwork();
- $('#wallet-status').textContent='已连接 '+short(await signer.getAddress())+'；选择已有合约或部署自己的练习合约。';
+ $('#wallet-status').textContent='已连接 '+short(await signer.getAddress())+'；选择已有合约或部署自己的测试合约。';
 });
 async function attach(target){
  await ensureNetwork();target=address(target);if(await provider.getCode(target)==='0x')throw Error('这个地址没有合约代码。');
@@ -92,7 +92,7 @@ async function attach(target){
  $('#network-dialog').close();notify('已加载测试网合约，当前展示真实合约数据。');
 }
 $('#attach').onclick=()=>run(()=>attach($('#contract-address').value));
-$('#deploy').onclick=()=>run(async()=>{await ensureNetwork();const a=await artifact();notify('请在钱包中确认部署测试网练习合约。');const deployed=await new ContractFactory(a.abi,a.bytecode,signer).deploy();await deployed.waitForDeployment();const target=await deployed.getAddress();$('#contract-address').value=target;$('#wallet-status').textContent='已部署：'+target;await attach(target);});
+$('#deploy').onclick=()=>run(async()=>{await ensureNetwork();const a=await artifact();notify('请在钱包中确认部署测试网合约。');const deployed=await new ContractFactory(a.abi,a.bytecode,signer).deploy();await deployed.waitForDeployment();const target=await deployed.getAddress();$('#contract-address').value=target;$('#wallet-status').textContent='已部署：'+target;await attach(target);});
 function toDemo(){mode='demo';account=DEMO;contract=null;context++;resetVerification();render();}
 $('#local-mode').onclick=()=>{toDemo();$('#network-dialog').close();};
 if(window.ethereum?.on){for(const event of ['accountsChanged','chainChanged'])window.ethereum.on(event,()=>{provider=null;signer=null;toDemo();$('#wallet-status').textContent='钱包状态改变，请重新连接。';});}
